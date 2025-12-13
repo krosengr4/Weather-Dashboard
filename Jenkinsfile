@@ -2,8 +2,11 @@ pipeline {
     agent any
 
     environment {
-        // Replace 'yourusername' with your actual Docker Hub username
-        DOCKER_HUB_USERNAME = 'yourusername'
+        // Add Docker to PATH for Jenkins
+        PATH = "/usr/local/bin:${env.PATH}"
+
+        // Docker Hub username
+        DOCKER_HUB_USERNAME = 'krosengr4'
         IMAGE_NAME = "${DOCKER_HUB_USERNAME}/weather-dashboard"
         IMAGE_TAG = "${BUILD_NUMBER}"
 
