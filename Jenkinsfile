@@ -68,25 +68,28 @@ pipeline {
         stage('Deploy to rosenpi') {
             steps {
                 echo 'Deploying to Raspberry Pi...'
-                sshagent(['rosenpi-ssh']) {
+                withCredentials([sshUserPrivateKey(
+                    credentialsId: 'rosenpi-ssh',
+                    keyFileVariable: 'SSH_KEY'
+                )]) {
                     sh '''
-                        ssh -o StrictHostKeyChecking=no ${PI_USER}@${PI_HOST} << 'ENDSSH'
+                        ssh -i $SSH_KEY -o StrictHostKeyChecking=no ${PI_USER}@${PI_HOST} << 'ENDSSH'
                             # Pull the latest image from Docker Hub
-                            docker pull ${IMAGE_NAME}:latest
+                            docker pull krosengr4/weather-dashboard:latest
 
                             # Stop and remove existing container if it exists
-                            docker stop ${CONTAINER_NAME} || true
-                            docker rm ${CONTAINER_NAME} || true
+                            docker stop weather-dashboard || true
+                            docker rm weather-dashboard || true
 
                             # Run the new container
                             docker run -d \
-                                --name ${CONTAINER_NAME} \
+                                --name weather-dashboard \
                                 --restart unless-stopped \
-                                -p ${HOST_PORT}:80 \
-                                ${IMAGE_NAME}:latest
+                                -p 3000:80 \
+                                krosengr4/weather-dashboard:latest
 
                             # Verify it's running
-                            docker ps | grep ${CONTAINER_NAME}
+                            docker ps | grep weather-dashboard
 
                             # Clean up old/unused images
                             docker image prune -f
