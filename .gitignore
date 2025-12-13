@@ -1,0 +1,52 @@
+# macOS
+  .DS_Store
+  .AppleDouble
+  .LSOverride
+
+  # Docker
+  Dockerfile.dockerignore
+  *.tar.gz
+
+  # IDEs
+  .vscode/
+  .idea/
+  *.swp
+  *.swo
+
+  # Logs
+  *.log
+  EOF
+
+  Then commit:
+  git add .gitignore
+  git commit -m "Add .gitignore"
+
+  ---
+  Pro Tip: Global gitignore
+
+  Set up a global gitignore for all your projects:
+
+  # Create global gitignore
+  cat > ~/.gitignore_global << 'EOF'
+  # macOS
+  .DS_Store
+  .AppleDouble
+  .LSOverride
+  ._*
+
+  # Thumbnails
+  Thumbs.db
+
+  # IDE
+  .vscode/
+  .idea/
+  *.swp
+  *.swo
+  *~
+
+  # Environment
+  .env.local
+  EOF
+
+  # Tell git to use it
+  git config --global core.excludesfile ~/.gitignore_global
