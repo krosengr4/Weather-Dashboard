@@ -1,0 +1,25 @@
+  apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    name: weather-dashboard
+    labels:
+      app: weather-dashboard
+  spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        app: weather-dashboard
+    template:
+      metadata:
+        labels:
+          app: weather-dashboard
+      spec:
+        containers:
+        - name: weather-dashboard
+          image: krosengr4/weather-dashboard:latest
+          ports:
+          - containerPort: 80
+          resources:
+            limits:
+              memory: "128Mi"
+              cpu: "250m"

@@ -65,34 +65,28 @@ pipeline {
             }
         }
 
-        stage('Deploy to rosenpi') {
+        stage('Deploy to K3s') {
             steps {
-                echo 'Deploying to Raspberry Pi...'
+                echo 'Deploying to K3s on Raspberry Pi...'
                 withCredentials([sshUserPrivateKey(
                     credentialsId: 'rosenpi-ssh',
                     keyFileVariable: 'SSH_KEY'
                 )]) {
                     sh '''
+                        # Copy k8s manifests to Pi
+                        scp -i $SSH_KEY -o StrictHostKeyChecking=no -r k8s ${PI_USER}@${PI_HOST}:~/
+
+                        # Deploy to K3s
                         ssh -i $SSH_KEY -o StrictHostKeyChecking=no ${PI_USER}@${PI_HOST} << 'ENDSSH'
-                            # Pull the latest image from Docker Hub
-                            docker pull krosengr4/weather-dashboard:latest
+                            # Apply Kubernetes manifests
+                            kubectl apply -f k8s/
 
-                            # Stop and remove existing container if it exists
-                            docker stop weather-dashboard || true
-                            docker rm weather-dashboard || true
+                            # Wait for rollout to complete
+                            kubectl rollout status deployment/weather-dashboard
 
-                            # Run the new container
-                            docker run -d \
-                                --name weather-dashboard \
-                                --restart unless-stopped \
-                                -p 3000:80 \
-                                krosengr4/weather-dashboard:latest
-
-                            # Verify it's running
-                            docker ps | grep weather-dashboard
-
-                            # Clean up old/unused images
-                            docker image prune -f
+                            # Verify deployment
+                            kubectl get pods -l app=weather-dashboard
+                            kubectl get svc weather-dashboard
 ENDSSH
                     '''
                 }
